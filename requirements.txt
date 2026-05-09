@@ -1,0 +1,27 @@
+# AI Crop Doctor — requirements.txt
+# Install with: pip install -r requirements.txt
+
+# Core
+streamlit
+python-dotenv
+Pillow
+requests
+
+# Groq (LLM + Vision)
+groq
+langchain-groq
+
+# LangChain core + community
+langchain
+langchain-core
+langchain-community
+langchain-text-splitters
+
+# Embeddings (local, no API key needed)
+sentence-transformers
+
+# Vector store
+chromadb
+
+# Dataset
+datasets
