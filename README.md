@@ -4,6 +4,8 @@ An AI-powered multimodal agricultural assistant that analyzes crop images, retri
 
 Built using Groq LLMs, LangChain, FAISS/ChromaDB, Hugging Face embeddings, and Streamlit.
 
+**Deployed Link** https://kisaan-ai.streamlit.app/
+
 ---
 
 # 🚀 Features
