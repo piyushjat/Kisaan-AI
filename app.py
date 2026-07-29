@@ -19,7 +19,7 @@ weather_api_key = os.getenv("OPENWEATHER_API_KEY")
 # --- INITIALIZATION ---
 @st.cache_resource
 def load_vector_db():
-    """Load the vector DB using a local HuggingFace embedding model (no API key needed)."""
+    
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     return Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
 
