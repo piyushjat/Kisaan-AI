@@ -1,11 +1,4 @@
 """
-setup_rag.py — Populate the local ChromaDB vector store for AI Crop Doctor.
-
-Changes from original:
-- Replaces GoogleGenerativeAIEmbeddings with HuggingFaceEmbeddings (sentence-transformers).
-  This means NO Google/Gemini API key is required for the RAG layer.
-- Everything else (dataset source, chunking, ChromaDB) stays the same.
-
 Run once before starting app.py:
     python setup_rag.py
 """
@@ -16,9 +9,11 @@ from datasets import load_dataset
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_community.vectorstores import FAISS
 
 load_dotenv()
+
+FAISS_INDEX_DIR = "./faiss_index"
 
 # 1. Download Dataset from Hugging Face Hub
 print("📥 Downloading Agriculture Dataset from Hugging Face...")
@@ -33,7 +28,7 @@ documents = []
 for row in hf_dataset.select(range(2000)):
     text_content = (
         f"Crop Issue/Question: {row['question']}\n"
-        f"Solution/Answer: {row['answer']}"
+        f"Solution/Answer: {row['answers']}"
     )
     doc = Document(
         page_content=text_content,
@@ -56,13 +51,12 @@ print("   (First run will download ~80 MB — subsequent runs use local cache)")
 embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
 # 5. Store embeddings in local ChromaDB
-print("💾 Storing embeddings in ChromaDB (./chroma_db)...")
-vector_db = Chroma.from_documents(
+print("💾 Storing embeddings in FAISS in disk")
+vector_db = FAISS.from_documents(
     documents=chunks,
     embedding=embeddings,
-    persist_directory="./chroma_db",
 )
-
+vector_db.save_local(FAISS_INDEX_DIR)
 print()
 print("✅ Success! RAG database is ready.")
 print("   Vector store saved to: ./chroma_db")

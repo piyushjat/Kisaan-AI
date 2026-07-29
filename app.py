@@ -7,7 +7,7 @@ from io import BytesIO
 from dotenv import load_dotenv
 
 from langchain_groq import ChatGroq
-from langchain_community.vectorstores import Chroma
+from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -15,26 +15,31 @@ from langchain_core.messages import HumanMessage, SystemMessage
 load_dotenv()
 groq_api_key = os.getenv("GROQ_API_KEY")
 weather_api_key = os.getenv("OPENWEATHER_API_KEY")
+FAISS_INDEX_DIR = "./faiss_index"
 
 # --- INITIALIZATION ---
 @st.cache_resource
 def load_vector_db():
-    
+    """Load the vector DB using a local HuggingFace embedding model (no API key needed)."""
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    return Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
+    return FAISS.load_local(
+        FAISS_INDEX_DIR,
+        embeddings,
+        allow_dangerous_deserialization=True,
+    )
 
 vector_db = load_vector_db()
 
 # Initialize Groq LLM (text/reasoning model — fast and free tier available)
 llm = ChatGroq(
-    model="llama-3.3-70b-versatile",
+    model="openai/gpt-oss-120b",
     temperature=0.3,
     api_key=groq_api_key,
 )
 
 # Vision model — Groq supports vision via llama-4 scout / llava
 vision_llm = ChatGroq(
-    model="meta-llama/llama-4-scout-17b-16e-instruct",
+    model="qwen/qwen3.6-27b",
     temperature=0.3,
     api_key=groq_api_key,
 )
@@ -42,7 +47,7 @@ vision_llm = ChatGroq(
 # --- HELPER FUNCTIONS ---
 def get_weather(location):
     """Fetches real-time weather. Falls back to mock data if no API key is provided."""
-    if not weather_api_key or weather_api_key == "your_openweathermap_key_here":
+    if not weather_api_key:
         return "Temperature: 32°C, Humidity: 65% (Mock Data)"
 
     try:
