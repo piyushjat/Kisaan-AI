@@ -21,7 +21,7 @@ langchain-text-splitters
 sentence-transformers
 
 # Vector store
-chromadb
+faiss-cpu
 
 # Dataset
 datasets
