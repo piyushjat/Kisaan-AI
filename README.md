@@ -34,7 +34,7 @@ Built using Groq LLMs, LangChain, FAISS/ChromaDB, Hugging Face embeddings, and S
 - RAG (Retrieval-Augmented Generation)
 
 ## Vector Database
-- ChromaDB
+- FAISS
 
 ## Frontend
 - Streamlit
@@ -55,18 +55,18 @@ User Input
         │
         ▼
 Vision Model Analysis
-(llama-4-scout)
+(qwen3.6-27b)
         │
         ▼
 Weather + Soil Retrieval
         │
         ▼
 RAG Semantic Search
-(Hugging Face + ChromaDB)
+(Hugging Face + FAISS)
         │
         ▼
 Context Synthesis
-(llama-3.3-70b)
+(gpt-oss-120b)
         │
         ▼
 Organic Farming Recommendations
@@ -82,7 +82,7 @@ Kisaan-AI/
 ├── app.py                 # Main Streamlit application
 ├── setup_rag.py           # Builds vector database
 ├── requirements.txt       # Dependencies
-├── chroma_db/             # Local vector database
+├── faiss_index             # Local vector database
 ├── .env                   # API keys
 └── README.md
 ```
@@ -172,7 +172,7 @@ streamlit run app.py
 # 🧩 AI Models Used
 
 ## Vision Model
-- `meta-llama/llama-4-scout-17b-16e-instruct`
+- `qwen/qwen3.6-27b`
 
 Used for:
 - Crop identification
@@ -182,7 +182,7 @@ Used for:
 ---
 
 ## Text Generation Model
-- `llama-3.3-70b-versatile`
+- `openai/gpt-oss-120b`
 
 Used for:
 - Agricultural reasoning
