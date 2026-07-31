@@ -14,8 +14,9 @@ langchain-groq
 # LangChain core + community
 langchain
 langchain-core
-langchain-community
 langchain-text-splitters
+langchain-huggingface
+langchain-faiss
 
 # Embeddings (local, no API key needed)
 sentence-transformers

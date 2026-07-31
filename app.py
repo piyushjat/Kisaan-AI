@@ -8,9 +8,13 @@ from dotenv import load_dotenv
 
 from langchain_groq import ChatGroq
 from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_core.messages import HumanMessage, SystemMessage
-
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages import HumanMessage
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnableLambda, RunnableParallel, RunnablePassthrough
+from sentence_transformers import CrossEncoder
+ 
 # Load environment variables
 load_dotenv()
 groq_api_key = os.getenv("GROQ_API_KEY")
@@ -22,6 +26,13 @@ FAISS_INDEX_DIR = "./faiss_index"
 def load_vector_db():
     """Load the vector DB using a local HuggingFace embedding model (no API key needed)."""
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+
+    if not os.path.exists(FAISS_INDEX_DIR):
+        raise FileNotFoundError(
+            f"FAISS index not found at '{FAISS_INDEX_DIR}'. "
+            "Run `python setup_rag.py` first to build it."
+        )
+ 
     return FAISS.load_local(
         FAISS_INDEX_DIR,
         embeddings,
@@ -29,6 +40,18 @@ def load_vector_db():
     )
 
 vector_db = load_vector_db()
+
+#retrives top 10 and reranks top 5
+CANDIDATE_K = 10
+RERANK_TOP_N = 5
+retriever = vector_db.as_retriever(search_kwargs={"k": CANDIDATE_K})
+ 
+@st.cache_resource
+def load_reranker():
+    return CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
+ 
+reranker = load_reranker()
+ 
 
 # Initialize Groq LLM (text/reasoning model — fast and free tier available)
 llm = ChatGroq(
@@ -86,93 +109,138 @@ def pil_to_base64(img: Image.Image) -> str:
     return base64.b64encode(buffered.getvalue()).decode("utf-8")
 
 
-# --- CORE LOGIC ---
-def process_farmer_query(image: Image.Image, user_query: str, location: str) -> str:
-    """Full pipeline: vision → weather/soil → RAG → synthesis."""
+# --- LCEL CHAINS ---
+ 
+# 1. Vision chain: prompt (text + N images)  | vision_llm | output parser
+def build_vision_messages(inputs: dict) -> list:
+    content = [
+        {
+            "type": "text",
+            "text": (
+                "You are an agricultural expert AI. You have been given "
+                f"{len(inputs['img_base64_list'])} photo(s) of the same crop/plant, "
+                "possibly from different angles or showing different affected areas. "
+                "Analyze them together. Identify: (1) the crop type, (2) any visible "
+                "diseases, pests, or nutrient deficiencies, (3) overall health status. "
+                "Be concise and specific. Also address the farmer's specific question: "
+                f"{inputs['user_query']}"
+            ),
+        }
+    ]
+    for img_base64 in inputs["img_base64_list"]:
+        content.append({
+            "type": "image_url",
+            "image_url": {"url": f"data:image/jpeg;base64,{img_base64}"},
+        })
+    return [HumanMessage(content=content)]
 
-    # 1. Image Analysis via Groq Vision Model (llama-4-scout supports vision)
-    st.info("👁️ Analyzing image with Vision Model (Groq llama-4-scout)...")
-    img_base64 = pil_to_base64(image)
 
-    vision_msg = HumanMessage(
-        content=[
-            {
-                "type": "text",
-                "text": (
-                    "You are an agricultural expert AI. Analyze this crop image carefully. "
-                    "Identify: (1) the crop type, (2) any visible diseases, pests, or nutrient deficiencies, "
-                    "(3) overall health status. Be concise and specific. "
-                    f"Also address the farmer's specific question: {user_query}"
-                ),
-            },
-            {
-                "type": "image_url",
-                "image_url": {
-                    "url": f"data:image/jpeg;base64,{img_base64}"
-                },
-            },
-        ]
-    )
-    vision_response = vision_llm.invoke([vision_msg])
-    image_analysis = vision_response.content
-
-    # 2. Fetch Environmental Data
-    st.info("🌍 Fetching Weather and Soil Data...")
-    weather = get_weather(location)
-    soil = get_soil_condition(location)
-
-    # 3. RAG Retrieval from organic farming knowledge base
-    st.info("📚 Searching Agricultural Knowledge Base...")
-    search_query = f"Organic chemical-free solutions for: {image_analysis}. Farmer question: {user_query}"
-    retrieved_docs = vector_db.similarity_search(search_query, k=3)
-    rag_context = "\n\n".join([doc.page_content for doc in retrieved_docs])
-    if not rag_context:
-        rag_context = "No specific documents found. Rely on general organic agricultural knowledge."
-
-    # 4. Final Synthesis via Groq LLM
-    st.info("🧠 Generating customized organic farming advice (Groq llama-3.3-70b)...")
-    system_prompt = (
-        "You are an expert Agricultural AI assistant specializing in organic and sustainable farming. "
-        "You always recommend chemical-free, eco-friendly solutions. "
-        "Format your response clearly using markdown with headings and bullet points."
-    )
-    final_prompt = f"""
+vision_chain = RunnableLambda(build_vision_messages) | vision_llm | StrOutputParser()
+ 
+# 2. Retrieval chain:
+#      rerank -> select top 5 -> construct a single context string for the LLM
+def rerank_top_n(inputs: dict) -> list:
+   
+    query = inputs["query"]
+    docs = inputs["docs"]
+    if not docs:
+        return []
+    pairs = [(query, doc.page_content) for doc in docs]
+    scores = reranker.predict(pairs)
+    ranked = sorted(zip(docs, scores), key=lambda pair: pair[1], reverse=True)
+    return [doc for doc, _ in ranked[:RERANK_TOP_N]]
+ 
+ 
+def format_docs(docs) -> str:
+    """Context construction: join the final selected chunks into one context block."""
+    if not docs:
+        return "No specific documents found. Rely on general organic agricultural knowledge."
+    return "\n\n".join(doc.page_content for doc in docs)
+ 
+ 
+retrieval_chain = (
+    RunnableParallel(docs=retriever, query=RunnablePassthrough())
+    | RunnableLambda(rerank_top_n)
+    | RunnableLambda(format_docs)
+)
+ 
+# 3. Synthesis chain: prompt (all collected context) | llm | output parser
+SYSTEM_PROMPT = (
+    "You are an expert Agricultural AI assistant specializing in organic and sustainable farming. "
+    "You always recommend chemical-free, eco-friendly solutions. "
+    "Format your response clearly using markdown with headings and bullet points."
+)
+ 
+SYNTHESIS_TEMPLATE = """
 A farmer has asked: "{user_query}"
-
+ 
 **Data Collected:**
 - **Image Analysis:** {image_analysis}
 - **Location:** {location}
 - **Current Weather:** {weather}
 - **Soil Condition:** {soil}
-
+ 
 **Reference Knowledge (from organic farming database):**
 {rag_context}
-
+ 
 **Your Task:**
 1. Confirm the crop and any disease/issue identified from the image.
 2. Provide practical, **chemical-free/organic** treatment or care advice based on the reference knowledge.
 3. Adapt your advice specifically to the current weather and soil conditions mentioned above.
 4. Add preventive tips for future crop health.
-
+ 
 Use clear markdown headings (##) and bullet points. Be practical and farmer-friendly.
 """
-
-    messages = [
-        SystemMessage(content=system_prompt),
-        HumanMessage(content=final_prompt),
-    ]
-    final_response = llm.invoke(messages)
-    return final_response.content
-
-
+ 
+synthesis_prompt = ChatPromptTemplate.from_messages([
+    ("system", SYSTEM_PROMPT),
+    ("human", SYNTHESIS_TEMPLATE),
+])
+synthesis_chain = synthesis_prompt | llm | StrOutputParser()
+ 
+ 
+# --- CORE LOGIC ---
+def process_farmer_query(images: list, user_query: str, location: str) -> str:
+    """Full pipeline: vision chain (multi-image) → weather/soil → retrieval chain → synthesis chain."""
+ 
+    # 1. Image Analysis via the vision LCEL chain
+    st.info("👁️ Analyzing image with Vision Model (Groq)...")
+    img_base64_list = [pil_to_base64(img) for img in images]
+    image_analysis = vision_chain.invoke({
+        "user_query": user_query,
+        "img_base64_list": img_base64_list,
+    })
+ 
+    # 2. Fetch Environmental Data 
+    st.info("🌍 Fetching Weather and Soil Data...")
+    weather = get_weather(location)
+    soil = get_soil_condition(location)
+ 
+    # 3. RAG Retrieval via the retrieval LCEL chain (similarity search -> rerank -> top 5 -> context)
+    st.info("📚 Searching & Reranking Agricultural Knowledge Base...")
+    search_query = f"Organic chemical-free solutions for: {image_analysis}. Farmer question: {user_query}"
+    rag_context = retrieval_chain.invoke(search_query)
+ 
+    # 4. Final Synthesis via the synthesis LCEL chain
+    st.info("🧠 Generating customized organic farming advice (Groq)...")
+    return synthesis_chain.invoke({
+        "user_query": user_query,
+        "image_analysis": image_analysis,
+        "location": location,
+        "weather": weather,
+        "soil": soil,
+        "rag_context": rag_context,
+    })
+ 
+ 
 # --- STREAMLIT UI ---
 st.set_page_config(page_title="AI Crop Doctor", page_icon="🌾", layout="wide")
-
-# Custom CSS for a polished look
+ 
+# Custom CSS
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Sans+3:wght@400;600&display=swap');
-
+ 
     html, body, [class*="css"] {
         font-family: 'Source Sans 3', sans-serif;
     }
@@ -199,16 +267,16 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
-
+ 
 st.title("🌾 AI Crop Doctor & Yield Optimizer")
-st.caption("Powered by **Groq** (llama-3.3-70b + llama-4-scout vision) · Organic farming knowledge base · Real-time weather")
+st.caption("Developer@Piyush")
 st.write(
     "Upload a photo of your crop, describe your concern, and the AI will analyze it using "
     "computer vision, check your local weather and soil data, and recommend organic solutions."
 )
-
+ 
 st.divider()
-
+ 
 col1, col2 = st.columns(2)
 with col1:
     location = st.text_input("📍 Your Location:", value="Lucknow, India")
@@ -217,19 +285,29 @@ with col2:
         "❓ Your Question:",
         placeholder="How do I treat this disease organically?",
     )
-
-uploaded_file = st.file_uploader(
-    "📷 Upload Crop Image", type=["jpg", "jpeg", "png"]
+ 
+uploaded_files = st.file_uploader(
+    "📷 Upload Crop Image", type=["jpg", "jpeg", "png"], accept_multiple_files=True
 )
+ 
+ 
+MAX_DISPLAY_WIDTH = 450 
 
-if uploaded_file is not None:
-    image = Image.open(uploaded_file)
-    st.image(image, caption="Uploaded Crop Image", use_container_width=True)
-
+ 
+images = []
+if uploaded_files:
+    images = [Image.open(f) for f in uploaded_files]
+ 
+    cols = st.columns(min(4, len(images)))
+    for i, img in enumerate(images):
+        display_image = img.copy()
+        display_image.thumbnail((MAX_DISPLAY_WIDTH, MAX_DISPLAY_WIDTH))
+        with cols[i % len(cols)]:
+            st.image(display_image, caption=f"Image {i + 1}")
 st.divider()
-
+ 
 if st.button("🔍 Analyze Crop", use_container_width=False):
-    if not uploaded_file:
+    if not images:
         st.error("Please upload a crop image first.")
     elif not location or not user_query:
         st.error("Please fill in both your location and your question.")
@@ -238,7 +316,7 @@ if st.button("🔍 Analyze Crop", use_container_width=False):
     else:
         with st.spinner("Processing your request — this takes ~15 seconds..."):
             try:
-                answer = process_farmer_query(image, user_query, location)
+                answer = process_farmer_query(images, user_query, location)
                 st.success("✅ Analysis Complete!")
                 st.markdown("---")
                 st.markdown("### 🌱 Diagnosis & Organic Recommendations")
@@ -246,6 +324,6 @@ if st.button("🔍 Analyze Crop", use_container_width=False):
             except Exception as e:
                 st.error(f"An error occurred: {e}")
                 st.info(
-                    "💡 Tip: Make sure your GROQ_API_KEY is valid and the chroma_db folder "
+                    "💡 Tip: Make sure your GROQ_API_KEY is valid and the faiss_index folder "
                     "exists (run setup_rag.py first)."
                 )
