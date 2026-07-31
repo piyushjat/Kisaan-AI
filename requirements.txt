@@ -6,8 +6,8 @@ streamlit
 python-dotenv
 Pillow
 requests
-torch
-torchvision
+
+# Groq (LLM + Vision)
 groq
 langchain-groq
 langchain
