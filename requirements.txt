@@ -8,11 +8,8 @@ Pillow
 requests
 torch
 torchvision
-# Groq (LLM + Vision)
 groq
 langchain-groq
-
-# LangChain core + community
 langchain
 langchain-core
 langchain-community
@@ -21,7 +18,9 @@ langchain-huggingface
 langchain-faiss
 
 # Embeddings (local, no API key needed)
-sentence-transformers
+sentence-transformers==3.0.1
+
+pyarrow==14.0.2
 
 # Vector store
 faiss-cpu
