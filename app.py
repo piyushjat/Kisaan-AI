@@ -53,21 +53,21 @@ def load_reranker():
 reranker = load_reranker()
  
 
-# Initialize Groq LLM (text/reasoning model — fast and free tier available)
+# initializing Groq LLM (text/reasoning model)
 llm = ChatGroq(
     model="openai/gpt-oss-120b",
     temperature=0.3,
     api_key=groq_api_key,
 )
 
-# Vision model — Groq supports vision via llama-4 scout / llava
+# Vision model 
 vision_llm = ChatGroq(
     model="qwen/qwen3.6-27b",
     temperature=0.3,
     api_key=groq_api_key,
 )
 
-# --- HELPER FUNCTIONS ---
+# --- HELPER FUNCTIONS (to get weather and soil data)---
 def get_weather(location):
     """Fetches real-time weather. Falls back to mock data if no API key is provided."""
     if not weather_api_key:
@@ -111,7 +111,7 @@ def pil_to_base64(img: Image.Image) -> str:
 
 # --- LCEL CHAINS ---
  
-# 1. Vision chain: prompt (text + N images)  | vision_llm | output parser
+# 1. Vision chain: prompt (text + N images)|vision_llm|output parser
 def build_vision_messages(inputs: dict) -> list:
     content = [
         {
@@ -138,7 +138,7 @@ def build_vision_messages(inputs: dict) -> list:
 vision_chain = RunnableLambda(build_vision_messages) | vision_llm | StrOutputParser()
  
 # 2. Retrieval chain:
-#      rerank -> select top 5 -> construct a single context string for the LLM
+#    rerank -> select top 5 -> construct a single context string for the LLM
 def rerank_top_n(inputs: dict) -> list:
    
     query = inputs["query"]
@@ -152,7 +152,7 @@ def rerank_top_n(inputs: dict) -> list:
  
  
 def format_docs(docs) -> str:
-    """Context construction: join the final selected chunks into one context block."""
+    """context construction"""
     if not docs:
         return "No specific documents found. Rely on general organic agricultural knowledge."
     return "\n\n".join(doc.page_content for doc in docs)
