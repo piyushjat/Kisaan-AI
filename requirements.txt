@@ -26,4 +26,4 @@ pyarrow==14.0.2
 faiss-cpu
 
 # Dataset
-datasets
+datasets==2.14.4
