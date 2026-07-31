@@ -18,7 +18,7 @@ langchain-huggingface
 langchain-faiss
 
 # Embeddings (local, no API key needed)
-sentence-transformers==3.0.1
+sentence-transformers==3.3.0
 
 pyarrow==18.1.0
 
@@ -26,4 +26,4 @@ pyarrow==18.1.0
 faiss-cpu
 
 # Dataset
-datasets==2.14.4
+datasets==3.2.0
