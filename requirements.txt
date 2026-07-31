@@ -20,7 +20,7 @@ langchain-faiss
 # Embeddings (local, no API key needed)
 sentence-transformers==3.0.1
 
-pyarrow==14.0.2
+pyarrow==18.1.0
 
 # Vector store
 faiss-cpu
