@@ -5,6 +5,7 @@ import base64
 from PIL import Image
 from io import BytesIO
 from dotenv import load_dotenv
+from setup_rag import build_vector_db
 
 from langchain_groq import ChatGroq
 from langchain_community.vectorstores import FAISS
@@ -28,10 +29,8 @@ def load_vector_db():
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
     if not os.path.exists(FAISS_INDEX_DIR):
-        raise FileNotFoundError(
-            f"FAISS index not found at '{FAISS_INDEX_DIR}'. "
-            "Run `python setup_rag.py` first to build it."
-        )
+        st.info("Building FAISS index for the first time. This may take a minute...")
+        build_vector_db()
  
     return FAISS.load_local(
         FAISS_INDEX_DIR,

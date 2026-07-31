@@ -47,7 +47,7 @@ embedding_and_storage_step = RunnableLambda(embed_and_store)
 ingestion_chain = chunking_step | embedding_and_storage_step
 
 
-if __name__ == "__main__":
+def build_vector_db():
     # 1. Download Dataset from Hugging Face Hub
     print("📥 Downloading Agriculture Dataset from Hugging Face...")
     hf_dataset = load_dataset("KisanVaani/agriculture-qa-english-only", split="train")
@@ -76,3 +76,6 @@ if __name__ == "__main__":
     print()
     print("✅ Success! RAG database is ready.")
     print("   You can now run:  streamlit run app.py")
+
+if __name__ == "__main__":
+    build_vector_db()
