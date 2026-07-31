@@ -6,7 +6,8 @@ streamlit
 python-dotenv
 Pillow
 requests
-
+torch
+torchvision
 # Groq (LLM + Vision)
 groq
 langchain-groq
@@ -14,6 +15,7 @@ langchain-groq
 # LangChain core + community
 langchain
 langchain-core
+langchain-community
 langchain-text-splitters
 langchain-huggingface
 langchain-faiss
