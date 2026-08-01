@@ -16,9 +16,9 @@ langchain-text-splitters
 langchain-huggingface
 
 # MCP
-mcp
 fastmcp
-langchain-mcp-adapters
+mcp==1.12.0
+langchain-mcp-adapters==0.1.9
 
 # Embeddings (local, no API key needed)
 sentence-transformers==3.3.0
