@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+import asyncio
 import requests
 import base64
 from PIL import Image
@@ -15,7 +16,8 @@ from langchain_core.messages import HumanMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda, RunnableParallel, RunnablePassthrough
 from sentence_transformers import CrossEncoder
- 
+from langchain_mcp_adapters.client import MultiServerMCPClient
+MCP_SERVER_SCRIPT = os.path.join(os.path.dirname(__file__), "McpServer.py")
 # Load environment variables
 load_dotenv()
 groq_api_key = os.getenv("GROQ_API_KEY")
@@ -40,7 +42,7 @@ def load_vector_db():
 
 vector_db = load_vector_db()
 
-#retrives top 10 and reranks top 5
+#retrives top 10 and reranks the retrieved top 5
 CANDIDATE_K = 10
 RERANK_TOP_N = 5
 retriever = vector_db.as_retriever(search_kwargs={"k": CANDIDATE_K})
@@ -59,48 +61,41 @@ llm = ChatGroq(
     api_key=groq_api_key,
 )
 
-# Vision model 
+# vision model 
 vision_llm = ChatGroq(
     model="qwen/qwen3.6-27b",
     temperature=0.3,
     api_key=groq_api_key,
 )
 
-# --- HELPER FUNCTIONS (to get weather and soil data)---
-def get_weather(location):
-    """Fetches real-time weather. Falls back to mock data if no API key is provided."""
-    if not weather_api_key:
-        return "Temperature: 32°C, Humidity: 65% (Mock Data)"
-
-    try:
-        url = f"http://api.openweathermap.org/data/2.5/weather?q={location}&appid={weather_api_key}&units=metric"
-        res = requests.get(url, timeout=10).json()
-        temp = res['main']['temp']
-        humidity = res['main']['humidity']
-        desc = res['weather'][0]['description']
-        return f"Temperature: {temp}°C, Humidity: {humidity}%, Condition: {desc.capitalize()}"
-    except Exception:
-        return "Weather data unavailable."
-
-
-def get_soil_condition(location):
-    """Mock lookup for soil conditions based on location."""
-    soil_database = {
-        "lucknow": "Alluvial soil, rich in potash but poor in phosphorus",
-        "punjab": "Loamy to sandy loam, good for wheat and rice",
-        "maharashtra": "Black cotton soil, retains moisture well",
-        "kerala": "Laterite soil, acidic in nature",
-        "gujarat": "Sandy loam to clay loam, moderate fertility",
-        "rajasthan": "Sandy and arid soil, low organic matter",
-        "karnataka": "Red laterite soil, slightly acidic",
-        "andhra pradesh": "Black and red loamy soil",
-        "tamil nadu": "Red loam and alluvial, varies by region",
-        "west bengal": "Alluvial soil, good for paddy cultivation",
+mcp_client = MultiServerMCPClient(
+    {
+        "crop_doctor_tools": {
+            "command": "python",
+            "args": [MCP_SERVER_SCRIPT],
+            "transport": "stdio",
+        }
     }
-    city = location.lower().split(",")[0].strip()
-    return soil_database.get(city, "Standard Loamy Soil (Default)")
+)
 
-
+@st.cache_resource
+def get_mcp_tools_by_name():
+    
+    async def _load():
+        tools = await mcp_client.get_tools()
+        return {tool.name: tool for tool in tools}
+ 
+    return asyncio.run(_load())
+ 
+ 
+async def fetch_weather_and_soil(location: str,tools_by_name: dict) -> tuple[str, str]:
+    """Calls the MCP-backed get_weather / get_soil_condition LangChain tools."""
+    
+    weather = await tools_by_name["get_weather"].ainvoke({"location": location})
+    soil = await tools_by_name["get_soil_condition"].ainvoke({"location": location})
+    return weather, soil
+ 
+ 
 def pil_to_base64(img: Image.Image) -> str:
     """Converts a PIL Image to a base64 JPEG string."""
     buffered = BytesIO()
@@ -211,9 +206,9 @@ def process_farmer_query(images: list, user_query: str, location: str) -> str:
     })
  
     # 2. Fetch Environmental Data 
-    st.info("🌍 Fetching Weather and Soil Data...")
-    weather = get_weather(location)
-    soil = get_soil_condition(location)
+    st.info("🌍 Fetching Weather and Soil Data via MCP tools...")
+    tools_by_name = get_mcp_tools_by_name() 
+    weather, soil = asyncio.run(fetch_weather_and_soil(location,tools_by_name))
  
     # 3. RAG Retrieval via the retrieval LCEL chain (similarity search -> rerank -> top 5 -> context)
     st.info("📚 Searching & Reranking Agricultural Knowledge Base...")
