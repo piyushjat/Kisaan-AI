@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 import asyncio
-import requests
+import sys
 import base64
 from PIL import Image
 from io import BytesIO
@@ -71,7 +71,7 @@ vision_llm = ChatGroq(
 mcp_client = MultiServerMCPClient(
     {
         "crop_doctor_tools": {
-            "command": "python",
+            "command": "sys.executable,",
             "args": [MCP_SERVER_SCRIPT],
             "transport": "stdio",
         }
