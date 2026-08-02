@@ -71,7 +71,7 @@ vision_llm = ChatGroq(
 mcp_client = MultiServerMCPClient(
     {
         "crop_doctor_tools": {
-            "command": "sys.executable,",
+            "command": sys.executable,
             "args": [MCP_SERVER_SCRIPT],
             "transport": "stdio",
         }
