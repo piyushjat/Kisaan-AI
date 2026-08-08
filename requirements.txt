@@ -14,6 +14,7 @@ langchain-core
 langchain-community
 langchain-text-splitters
 langchain-huggingface
+langgraph
 
 # MCP
 fastmcp

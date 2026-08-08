@@ -1,8 +1,12 @@
+
 import streamlit as st
 import os
 import asyncio
 import sys
+import time
 import base64
+import logging
+from typing import TypedDict,Optional
 from PIL import Image
 from io import BytesIO
 from dotenv import load_dotenv
@@ -17,13 +21,47 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda, RunnableParallel, RunnablePassthrough
 from sentence_transformers import CrossEncoder
 from langchain_mcp_adapters.client import MultiServerMCPClient
+from langgraph.graph import StateGraph,START,END
+
 MCP_SERVER_SCRIPT = os.path.join(os.path.dirname(__file__), "McpServer.py")
+
 # Load environment variables
 load_dotenv()
 groq_api_key = os.getenv("GROQ_API_KEY")
 weather_api_key = os.getenv("OPENWEATHER_API_KEY")
 FAISS_INDEX_DIR = "./faiss_index"
 
+# --- LOGGING SETUP ---
+logger=logging.getLogger("Kissan_ai")
+logger.setLevel(logging.INFO)
+if not logger.handlers:
+    _formatter= logging.Formatter(
+        "%(asctime)s | %(levelname)s | %(name)s |%(message)s"
+    )
+    _file_handler = logging.FileHandler("Kissan_ai.log")
+    _file_handler.setFormatter(_formatter)
+    _console_handler = logging.StreamHandler()
+    _console_handler.setFormatter(_formatter)
+    logger.addHandler(_file_handler)
+    logger.addHandler(_console_handler)
+
+# --- RETRY CONFIG (env-configurable) ---
+GROQ_RETRY_MAX_ATTEMPTS = int(os.getenv("GROQ_RETRY_MAX_ATTEMPTS", "3"))
+GROQ_RETRY_BACKOFF_BASE = int(os.getenv("GROQ_RETRY_BACKOFF_BASE", "2"))
+
+def with_retries(func, *args, **kwargs):
+    """Calls func with exponential backoff retries. Raises the last exception if all attempts fail."""
+    last_exception = None
+    for attempt in range(1, GROQ_RETRY_MAX_ATTEMPTS + 1):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            last_exception = e
+            logger.warning(f"Attempt {attempt}/{GROQ_RETRY_MAX_ATTEMPTS} failed: {e}")
+            if attempt < GROQ_RETRY_MAX_ATTEMPTS:
+                time.sleep(GROQ_RETRY_BACKOFF_BASE ** attempt)
+    raise last_exception
+ 
 # --- INITIALIZATION ---
 @st.cache_resource
 def load_vector_db():
@@ -192,40 +230,128 @@ synthesis_prompt = ChatPromptTemplate.from_messages([
 ])
 synthesis_chain = synthesis_prompt | llm | StrOutputParser()
  
- 
-# --- CORE LOGIC ---
-def process_farmer_query(images: list, user_query: str, location: str) -> str:
-    """Full pipeline: vision chain (multi-image) → weather/soil → retrieval chain → synthesis chain."""
- 
-    # 1. Image Analysis via the vision LCEL chain
-    st.info("👁️ Analyzing image with Vision Model (Groq)...")
-    img_base64_list = [pil_to_base64(img) for img in images]
-    image_analysis = vision_chain.invoke({
-        "user_query": user_query,
-        "img_base64_list": img_base64_list,
-    })
- 
-    # 2. Fetch Environmental Data 
-    st.info("🌍 Fetching Weather and Soil Data via MCP tools...")
-    tools_by_name = get_mcp_tools_by_name() 
-    weather, soil = asyncio.run(fetch_weather_and_soil(location,tools_by_name))
- 
-    # 3. RAG Retrieval via the retrieval LCEL chain (similarity search -> rerank -> top 5 -> context)
-    st.info("📚 Searching & Reranking Agricultural Knowledge Base...")
-    search_query = f"Organic chemical-free solutions for: {image_analysis}. Farmer question: {user_query}"
-    rag_context = retrieval_chain.invoke(search_query)
- 
-    # 4. Final Synthesis via the synthesis LCEL chain
-    st.info("🧠 Generating customized organic farming advice (Groq)...")
-    return synthesis_chain.invoke({
-        "user_query": user_query,
-        "image_analysis": image_analysis,
-        "location": location,
-        "weather": weather,
-        "soil": soil,
-        "rag_context": rag_context,
-    })
- 
+class KissanState(TypedDict):
+    # inputs
+    images:list
+    user_query:str
+    location:str
+
+
+    # populated by vision_node
+    img_base64_list:list
+    image_analysis:str
+
+    # populated by weather_soil_node
+    weather:str
+    soil:str
+    weather_soil_failed:bool
+
+    # populated by retrieval_node
+    rag_context:str
+    retrieval_failed:bool
+
+    # populated by synthesis_node
+    final_answer:str
+
+    # error tracking (hard-fail signal, set by vision_node or synthesis_node)
+    error:Optional[str]
+
+
+def vision_node(state:KissanState)->dict:
+    try:
+        img_base64_list=[pil_to_base64(img) for img in state["images"]]
+        image_analysis=with_retries(
+            vision_chain.invoke,{
+                "user_query":state["user_query"],
+                "img_base64_list":img_base64_list
+
+            }
+        )
+        return{
+            "img_base64_list":img_base64_list,
+            "image_analysis":image_analysis
+        }
+    except Exception as e:
+        logger.error(f"vision_node hard-failed:{e}")
+        return{"error":f"Image analysis failed: {e}"}
+
+def weather_soil_node(state:KissanState)->dict:
+    """Non-critical node — degrades gracefully instead of crashing the graph."""
+    if state.get("error"):
+        return{}  # upstream already hard-failed, skip work
+
+    try:
+        tools_by_name=get_mcp_tools_by_name()
+        weather,soil=with_retries(
+            lambda:asyncio.run(fetch_weather_and_soil(state["location"],tools_by_name))
+        )
+
+        return {"weather":weather,"soil":soil,"weather_soil_failed":False}
+
+    except Exception as e:
+        logger.warning(f"weather_soil_node degraded: {e}")
+        return{
+            "weather":"unavailable",
+            "soil":"unavailable",
+            "weather_soil_failed":True
+        }
+
+
+def retrieval_node(state:KissanState)->dict:
+    """Non-critical node — degrades gracefully instead of crashing the graph."""
+    if state.get("error"):
+        return{}
+
+    try:
+        search_query=(
+            f"organic-chemical-free solutions for: {state['image_analysis']}."
+            f"farmer question: {state['user_query']}"
+        )
+        rag_context=retrieval_chain.invoke(search_query)
+        return{"rag_context":rag_context,"retrieval_failed":False}
+    
+    except Exception as e:
+        logger.warning(f"retrieval node degraded:{e}")
+        return{
+            "rag_context":"No refrence data available- rely on generic farming Knowledge.",
+            "retrieval_failed":True
+        }
+
+def synthesis_node(state:KissanState)->dict:
+    """Critical node — hard-fails into state['error'] if retries are exhausted."""
+    if state.get("error"):
+        return {}
+
+    try:
+        final_answer=with_retries(
+            synthesis_chain.invoke,{
+                "user_query": state["user_query"],
+                "image_analysis": state["image_analysis"],
+                "location": state["location"],
+                "weather": state["weather"],
+                "soil": state["soil"],
+                "rag_context": state["rag_context"],
+            },
+        )
+        return {"final_answer":final_answer}
+    except Exception as e:
+        logger.error(f"synthesis_node hard-failed: {e}")
+        return{"error":f"could not generate advice: {e}"}
+
+builder=StateGraph(KissanState)
+
+builder.add_node("vision_node", vision_node)
+builder.add_node("weather_soil_node", weather_soil_node)
+builder.add_node("retrieval_node", retrieval_node)
+builder.add_node("synthesis_node", synthesis_node)
+
+builder.add_edge(START,"vision_node")
+builder.add_edge("vision_node","weather_soil_node")
+builder.add_edge("weather_soil_node","retrieval_node")
+builder.add_edge("retrieval_node","synthesis_node")
+builder.add_edge("synthesis_node",END)
+
+kisaan_graph = builder.compile()
  
 # --- STREAMLIT UI ---
 st.set_page_config(page_title="AI Crop Doctor", page_icon="🌾", layout="wide")
@@ -310,7 +436,30 @@ if st.button("🔍 Analyze Crop", use_container_width=False):
     else:
         with st.spinner("Processing your request — this takes ~15 seconds..."):
             try:
-                answer = process_farmer_query(images, user_query, location)
+                result = kisaan_graph.invoke({
+                    "images": images,
+                    "user_query": user_query,
+                    "location": location,
+                })
+ 
+                if result.get("error"):
+                    st.error(f"❌ {result['error']}")
+                    st.info(
+                        "💡 Tip: Make sure your GROQ_API_KEY is valid and the faiss_index folder "
+                        "exists (run setup_rag.py first)."
+                    )
+                else:
+                    answer = result["final_answer"]
+                    if result.get("weather_soil_failed"):
+                        st.warning(
+                            "⚠️ Weather/soil data was unavailable — advice below is based on "
+                            "image and general knowledge only."
+                        )
+                    if result.get("retrieval_failed"):
+                        st.warning(
+                            "⚠️ Knowledge base lookup failed — advice below is based on general "
+                            "organic farming knowledge."
+                        )
                 st.success("✅ Analysis Complete!")
                 st.markdown("---")
                 st.markdown("### 🌱 Diagnosis & Organic Recommendations")
