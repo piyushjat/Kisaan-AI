@@ -1,14 +1,20 @@
 .venv/
+venv/
+
 .env
+
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+*.pyd
 
-faiss_index/
-index.faiss
-index.pkl
+backend/faiss_index/
 
-.streamlit/cache/
 
+.streamlit/
+
+logs/
+*.log
 
 .DS_Store
 Thumbs.db

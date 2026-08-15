@@ -12,7 +12,7 @@ weather_api_key = os.getenv("OPENWEATHER_API_KEY")
 
 mcp = FastMCP("crop-doctor-tools")
 
-# Same mock lookup table that used to live in app.py's get_soil_condition().
+
 SOIL_DATABASE = {
     "lucknow": "Alluvial soil, rich in potash but poor in phosphorus",
     "punjab": "Loamy to sandy loam, good for wheat and rice",

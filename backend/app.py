@@ -1,14 +1,16 @@
 
-import streamlit as st
 import os
 import asyncio
 import sys
 import time
 import base64
 import logging
+from pathlib import Path
 from typing import TypedDict,Optional
-from PIL import Image
-from io import BytesIO
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+from pydantic import BaseModel
 from dotenv import load_dotenv
 from setup_rag import build_vector_db
 
@@ -23,7 +25,7 @@ from sentence_transformers import CrossEncoder
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langgraph.graph import StateGraph,START,END
 
-MCP_SERVER_SCRIPT = os.path.join(os.path.dirname(__file__), "McpServer.py")
+MCP_SERVER_SCRIPT = os.path.join(os.path.dirname(__file__), "mcp_server.py")
 
 # Load environment variables
 load_dotenv()
@@ -32,13 +34,16 @@ weather_api_key = os.getenv("OPENWEATHER_API_KEY")
 FAISS_INDEX_DIR = "./faiss_index"
 
 # --- LOGGING SETUP ---
+BASE_DIR = Path(__file__).resolve().parent
+LOG_FILE = BASE_DIR.parent / "logs" / "Kissan_ai.log"
+LOG_FILE.parent.mkdir(exist_ok=True)
 logger=logging.getLogger("Kissan_ai")
 logger.setLevel(logging.INFO)
 if not logger.handlers:
     _formatter= logging.Formatter(
         "%(asctime)s | %(levelname)s | %(name)s |%(message)s"
     )
-    _file_handler = logging.FileHandler("Kissan_ai.log")
+    _file_handler = logging.FileHandler(LOG_FILE,encoding="utf-8")
     _file_handler.setFormatter(_formatter)
     _console_handler = logging.StreamHandler()
     _console_handler.setFormatter(_formatter)
@@ -63,13 +68,13 @@ def with_retries(func, *args, **kwargs):
     raise last_exception
  
 # --- INITIALIZATION ---
-@st.cache_resource
+
 def load_vector_db():
     """Load the vector DB using a local HuggingFace embedding model (no API key needed)."""
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
     if not os.path.exists(FAISS_INDEX_DIR):
-        st.info("Building FAISS index for the first time. This may take a minute...")
+        logger.info("Building FAISS index for the first time. This may take a minute...")
         build_vector_db()
  
     return FAISS.load_local(
@@ -81,15 +86,10 @@ def load_vector_db():
 vector_db = load_vector_db()
 
 #retrives top 10 and reranks the retrieved top 5
-CANDIDATE_K = 10
-RERANK_TOP_N = 5
+CANDIDATE_K = int(os.getenv("GROQ_RETRY_MAX_ATTEMPTS", "10"))
+RERANK_TOP_N = int(os.getenv("GROQ_RETRY_MAX_ATTEMPTS", "5"))
 retriever = vector_db.as_retriever(search_kwargs={"k": CANDIDATE_K})
- 
-@st.cache_resource
-def load_reranker():
-    return CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
- 
-reranker = load_reranker()
+reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
  
 
 # initializing Groq LLM (text/reasoning model)
@@ -116,14 +116,14 @@ mcp_client = MultiServerMCPClient(
     }
 )
 
-@st.cache_resource
-def get_mcp_tools_by_name():
-    
-    async def _load():
+_mcp_tools_cache = None
+
+async def get_mcp_tools_by_name():
+    global _mcp_tools_cache
+    if _mcp_tools_cache is None:
         tools = await mcp_client.get_tools()
-        return {tool.name: tool for tool in tools}
- 
-    return asyncio.run(_load())
+        _mcp_tools_cache = {tool.name: tool for tool in tools}
+    return _mcp_tools_cache
  
  
 async def fetch_weather_and_soil(location: str,tools_by_name: dict) -> tuple[str, str]:
@@ -134,11 +134,6 @@ async def fetch_weather_and_soil(location: str,tools_by_name: dict) -> tuple[str
     return weather, soil
  
  
-def pil_to_base64(img: Image.Image) -> str:
-    """Converts a PIL Image to a base64 JPEG string."""
-    buffered = BytesIO()
-    img.save(buffered, format="JPEG")
-    return base64.b64encode(buffered.getvalue()).decode("utf-8")
 
 
 # --- LCEL CHAINS ---
@@ -232,7 +227,7 @@ synthesis_chain = synthesis_prompt | llm | StrOutputParser()
  
 class KissanState(TypedDict):
     # inputs
-    images:list
+    images_base64:list
     user_query:str
     location:str
 
@@ -259,7 +254,7 @@ class KissanState(TypedDict):
 
 def vision_node(state:KissanState)->dict:
     try:
-        img_base64_list=[pil_to_base64(img) for img in state["images"]]
+        img_base64_list=state["images_base64"]
         image_analysis=with_retries(
             vision_chain.invoke,{
                 "user_query":state["user_query"],
@@ -281,7 +276,7 @@ def weather_soil_node(state:KissanState)->dict:
         return{}  # upstream already hard-failed, skip work
 
     try:
-        tools_by_name=get_mcp_tools_by_name()
+        tools_by_name=asyncio.run(get_mcp_tools_by_name()) 
         weather,soil=with_retries(
             lambda:asyncio.run(fetch_weather_and_soil(state["location"],tools_by_name))
         )
@@ -352,121 +347,48 @@ builder.add_edge("retrieval_node","synthesis_node")
 builder.add_edge("synthesis_node",END)
 
 kisaan_graph = builder.compile()
- 
-# --- STREAMLIT UI ---
-st.set_page_config(page_title="AI Crop Doctor", page_icon="🌾", layout="wide")
- 
-# Custom CSS
-st.markdown("""
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Sans+3:wght@400;600&display=swap');
- 
-    html, body, [class*="css"] {
-        font-family: 'Source Sans 3', sans-serif;
-    }
-    h1, h2, h3 {
-        font-family: 'Playfair Display', serif;
-    }
-    .stButton > button {
-        background: linear-gradient(135deg, #2d6a4f, #40916c);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 0.6rem 2rem;
-        font-size: 1rem;
-        font-weight: 600;
-        transition: all 0.2s ease;
-    }
-    .stButton > button:hover {
-        background: linear-gradient(135deg, #1b4332, #2d6a4f);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(45,106,79,0.4);
-    }
-    .stAlert {
-        border-radius: 8px;
-    }
-</style>
-""", unsafe_allow_html=True)
- 
-st.title("🌾 AI Crop Doctor & Yield Optimizer")
-st.caption("Developer@Piyush")
-st.write(
-    "Upload a photo of your crop, describe your concern, and the AI will analyze it using "
-    "computer vision, check your local weather and soil data, and recommend organic solutions."
-)
- 
-st.divider()
- 
-col1, col2 = st.columns(2)
-with col1:
-    location = st.text_input("📍 Your Location:", value="Lucknow, India")
-with col2:
-    user_query = st.text_input(
-        "❓ Your Question:",
-        placeholder="How do I treat this disease organically?",
-    )
- 
-uploaded_files = st.file_uploader(
-    "📷 Upload Crop Image", type=["jpg", "jpeg", "png"], accept_multiple_files=True
-)
- 
- 
-MAX_DISPLAY_WIDTH = 450 
+
 
  
-images = []
-if uploaded_files:
-    images = [Image.open(f) for f in uploaded_files]
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # warm the MCP tools cache on startup so the first request isn't slower than the rest
+    await get_mcp_tools_by_name()
+    logger.info("Backend startup complete — MCP tools cached, vector DB loaded.")
+    yield
  
-    cols = st.columns(min(4, len(images)))
-    for i, img in enumerate(images):
-        display_image = img.copy()
-        display_image.thumbnail((MAX_DISPLAY_WIDTH, MAX_DISPLAY_WIDTH))
-        with cols[i % len(cols)]:
-            st.image(display_image, caption=f"Image {i + 1}")
-st.divider()
  
-if st.button("🔍 Analyze Crop", use_container_width=False):
-    if not images:
-        st.error("Please upload a crop image first.")
-    elif not location or not user_query:
-        st.error("Please fill in both your location and your question.")
-    elif not groq_api_key:
-        st.error("GROQ_API_KEY is missing. Please set it in your .env file.")
-    else:
-        with st.spinner("Processing your request — this takes ~15 seconds..."):
-            try:
-                result = kisaan_graph.invoke({
-                    "images": images,
-                    "user_query": user_query,
-                    "location": location,
-                })
+app = FastAPI(title="Crop Doctor API", lifespan=lifespan)
  
-                if result.get("error"):
-                    st.error(f"❌ {result['error']}")
-                    st.info(
-                        "💡 Tip: Make sure your GROQ_API_KEY is valid and the faiss_index folder "
-                        "exists (run setup_rag.py first)."
-                    )
-                else:
-                    answer = result["final_answer"]
-                    if result.get("weather_soil_failed"):
-                        st.warning(
-                            "⚠️ Weather/soil data was unavailable — advice below is based on "
-                            "image and general knowledge only."
-                        )
-                    if result.get("retrieval_failed"):
-                        st.warning(
-                            "⚠️ Knowledge base lookup failed — advice below is based on general "
-                            "organic farming knowledge."
-                        )
-                st.success("✅ Analysis Complete!")
-                st.markdown("---")
-                st.markdown("### 🌱 Diagnosis & Organic Recommendations")
-                st.markdown(answer)
-            except Exception as e:
-                st.error(f"An error occurred: {e}")
-                st.info(
-                    "💡 Tip: Make sure your GROQ_API_KEY is valid and the faiss_index folder "
-                    "exists (run setup_rag.py first)."
-                )
+ 
+class DiagnoseRequest(BaseModel):
+    images_base64: list[str]   # each image already base64-encoded JPEG by the client
+    user_query: str
+    location: str
+ 
+ 
+class DiagnoseResponse(BaseModel):
+    final_answer: Optional[str] = None
+    error: Optional[str] = None
+    weather_soil_failed: bool = False
+    retrieval_failed: bool = False
+ 
+ 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+ 
+ 
+@app.post("/diagnose", response_model=DiagnoseResponse)
+def diagnose(request: DiagnoseRequest):
+    result = kisaan_graph.invoke({
+        "images_base64": request.images_base64,
+        "user_query": request.user_query,
+        "location": request.location,
+    })
+    return DiagnoseResponse(
+        final_answer=result.get("final_answer"),
+        error=result.get("error"),
+        weather_soil_failed=result.get("weather_soil_failed", False),
+        retrieval_failed=result.get("retrieval_failed", False),
+    )
