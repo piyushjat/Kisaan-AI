@@ -50,7 +50,7 @@ if not logger.handlers:
     logger.addHandler(_file_handler)
     logger.addHandler(_console_handler)
 
-# --- RETRY CONFIG (env-configurable) ---
+# --- RETRY CONFIG ---
 GROQ_RETRY_MAX_ATTEMPTS = int(os.getenv("GROQ_RETRY_MAX_ATTEMPTS", "3"))
 GROQ_RETRY_BACKOFF_BASE = int(os.getenv("GROQ_RETRY_BACKOFF_BASE", "2"))
 
@@ -254,7 +254,16 @@ class KissanState(TypedDict):
 
 def vision_node(state:KissanState)->dict:
     try:
-        img_base64_list=state["images_base64"]
+        img_base64_list=state.get("images_base64")
+         # No image provided → continue with text-only pipeline
+        if not img_base64_list:
+            logger.info("No image provided — skipping vision analysis.")
+            return {
+                "img_base64_list": [],
+                "image_analysis": "No image provided. Diagnose based on the farmer's question and retrieved agricultural knowledge."
+            }
+
+        # Image provided → perform vision analysis
         image_analysis=with_retries(
             vision_chain.invoke,{
                 "user_query":state["user_query"],
@@ -362,9 +371,10 @@ app = FastAPI(title="Crop Doctor API", lifespan=lifespan)
  
  
 class DiagnoseRequest(BaseModel):
-    images_base64: list[str]   # each image already base64-encoded JPEG by the client
+    images_base64: Optional[list[str]] = None
     user_query: str
     location: str
+    evaluation_mode: bool = False
  
  
 class DiagnoseResponse(BaseModel):
@@ -372,6 +382,7 @@ class DiagnoseResponse(BaseModel):
     error: Optional[str] = None
     weather_soil_failed: bool = False
     retrieval_failed: bool = False
+    rag_context: Optional[str] = None
  
  
 @app.get("/health")
@@ -391,4 +402,5 @@ def diagnose(request: DiagnoseRequest):
         error=result.get("error"),
         weather_soil_failed=result.get("weather_soil_failed", False),
         retrieval_failed=result.get("retrieval_failed", False),
+        rag_context=result.get("rag_context"),
     )
