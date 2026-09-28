@@ -1,0 +1,302 @@
+[
+  {
+    "id": 1,
+    "category": "Apple___Apple_scab",
+    "crop": "Apple",
+    "disease_label": "Apple scab (fungal, Venturia inaequalis)",
+    // "image_path": "images/Apple___Apple_scab__00075aa8_d81a_4184_8541_b692b78d398a___FREC_Scab_3335.JPG",
+    "user_query": "Why does my apple tree have dark spots on the leaves?",
+    "location": "Shimla, India",
+    "reference_answer": "The leaves show apple scab, a fungal disease causing olive-green to black velvety spots on leaves and fruit. Organic management: remove and destroy fallen infected leaves in autumn to reduce fungal spores overwintering; apply sulfur-based or copper-based organic fungicide sprays starting at bud break; ensure good air circulation via pruning; avoid overhead watering which spreads spores; choose scab-resistant apple varieties for future plantings."
+  },
+  {
+    "id": 2,
+    "category": "Apple___Apple_scab",
+    "crop": "Apple",
+    "disease_label": "Apple scab (fungal, Venturia inaequalis)",
+    // "image_path": "images/Apple___Apple_scab__01a66316_0e98_4d3b_a56f_d78752cd043f___FREC_Scab_3003.JPG",
+    "user_query": "My apple leaves look scabby and black, what organic treatment can I use?",
+    "location": "Kashmir, India",
+    "reference_answer": "The leaves show apple scab, a fungal disease causing olive-green to black velvety spots on leaves and fruit. Organic management: remove and destroy fallen infected leaves in autumn to reduce fungal spores overwintering; apply sulfur-based or copper-based organic fungicide sprays starting at bud break; ensure good air circulation via pruning; avoid overhead watering which spreads spores; choose scab-resistant apple varieties for future plantings."
+  },
+  {
+    "id": 3,
+    "category": "Apple___Apple_scab",
+    "crop": "Apple",
+    "disease_label": "Apple scab (fungal, Venturia inaequalis)",
+    // "image_path": "images/Apple___Apple_scab__01f3deaa_6143_4b6c_9c22_620a46d8be04___FREC_Scab_3112.JPG",
+    "user_query": "Is this disease going to spread to my apple fruit too?",
+    "location": "Himachal Pradesh, India",
+    "reference_answer": "The leaves show apple scab, a fungal disease causing olive-green to black velvety spots on leaves and fruit. Organic management: remove and destroy fallen infected leaves in autumn to reduce fungal spores overwintering; apply sulfur-based or copper-based organic fungicide sprays starting at bud break; ensure good air circulation via pruning; avoid overhead watering which spreads spores; choose scab-resistant apple varieties for future plantings."
+  },
+  {
+    "id": 4,
+    "category": "Corn__maize____Common_rust_",
+    "crop": "Corn (Maize)",
+    "disease_label": "Common rust (fungal, Puccinia sorghi)",
+    // "image_path": "images/Corn__maize____Common_rust___RS_Rust_1563.JPG",
+    "user_query": "What are these orange-brown spots on my maize leaves?",
+    "location": "Ludhiana, Punjab, India",
+    "reference_answer": "This is common rust, a fungal disease causing small reddish-brown pustules on both sides of corn leaves. Organic management: plant rust-resistant maize hybrids; avoid dense planting to improve airflow; remove and destroy severely infected leaves; apply neem oil or sulfur spray as a preventive organic fungicide; rotate crops away from maize for at least one season if rust is recurring; ensure balanced potassium nutrition since rust is often worse in potassium-deficient plants."
+  },
+  {
+    "id": 5,
+    "category": "Corn__maize____Common_rust_",
+    "crop": "Corn (Maize)",
+    "disease_label": "Common rust (fungal, Puccinia sorghi)",
+    // "image_path": "images/Corn__maize____Common_rust___RS_Rust_1564.JPG",
+    "user_query": "My corn crop has rusty patches, how do I treat it organically?",
+    "location": "Nashik, Maharashtra, India",
+    "reference_answer": "This is common rust, a fungal disease causing small reddish-brown pustules on both sides of corn leaves. Organic management: plant rust-resistant maize hybrids; avoid dense planting to improve airflow; remove and destroy severely infected leaves; apply neem oil or sulfur spray as a preventive organic fungicide; rotate crops away from maize for at least one season if rust is recurring; ensure balanced potassium nutrition since rust is often worse in potassium-deficient plants."
+  },
+  {
+    "id": 6,
+    "category": "Corn__maize____Common_rust_",
+    "crop": "Corn (Maize)",
+    "disease_label": "Common rust (fungal, Puccinia sorghi)",
+    // "image_path": "images/Corn__maize____Common_rust___RS_Rust_1565.JPG",
+    "user_query": "Will this rust reduce my maize yield significantly?",
+    "location": "Karnal, Haryana, India",
+    "reference_answer": "This is common rust, a fungal disease causing small reddish-brown pustules on both sides of corn leaves. Organic management: plant rust-resistant maize hybrids; avoid dense planting to improve airflow; remove and destroy severely infected leaves; apply neem oil or sulfur spray as a preventive organic fungicide; rotate crops away from maize for at least one season if rust is recurring; ensure balanced potassium nutrition since rust is often worse in potassium-deficient plants."
+  },
+  {
+    "id": 7,
+    "category": "Grape___Black_rot",
+    "crop": "Grape",
+    "disease_label": "Black rot (fungal, Guignardia bidwellii)",
+    // "image_path": "images/Grape___Black_rot__00090b0f_c140_4e77_8d20_d39f67b75fcc___FAM_B.Rot_0376.JPG",
+    "user_query": "My grape leaves have brown circular spots, what disease is this?",
+    "location": "Nashik, Maharashtra, India",
+    "reference_answer": "This is black rot, a fungal disease causing brown circular lesions on leaves and shriveled, mummified black fruit. Organic management: prune out and destroy infected canes, leaves, and mummified fruit during dormancy; improve canopy airflow through proper trellising and leaf pulling; apply organic copper-based fungicide sprays starting at bud break through fruit set; avoid working in the vineyard when foliage is wet to reduce spore spread."
+  },
+  {
+    "id": 8,
+    "category": "Grape___Black_rot",
+    "crop": "Grape",
+    "disease_label": "Black rot (fungal, Guignardia bidwellii)",
+    // "image_path": "images/Grape___Black_rot__003d09ef_e16c_4e8a_badf_847d46cb3dc0___FAM_B.Rot_3184.JPG",
+    "user_query": "The grapes on my vine are shriveling up and turning black, why?",
+    "location": "Sangli, Maharashtra, India",
+    "reference_answer": "This is black rot, a fungal disease causing brown circular lesions on leaves and shriveled, mummified black fruit. Organic management: prune out and destroy infected canes, leaves, and mummified fruit during dormancy; improve canopy airflow through proper trellising and leaf pulling; apply organic copper-based fungicide sprays starting at bud break through fruit set; avoid working in the vineyard when foliage is wet to reduce spore spread."
+  },
+  {
+    "id": 9,
+    "category": "Grape___Black_rot",
+    "crop": "Grape",
+    "disease_label": "Black rot (fungal, Guignardia bidwellii)",
+    // "image_path": "images/Grape___Black_rot__004175d8_dc74_4285_8401_3cc9565730bb___FAM_B.Rot_0626.JPG",
+    "user_query": "What organic spray can I use for black rot on grapevines?",
+    "location": "Bijapur, Karnataka, India",
+    "reference_answer": "This is black rot, a fungal disease causing brown circular lesions on leaves and shriveled, mummified black fruit. Organic management: prune out and destroy infected canes, leaves, and mummified fruit during dormancy; improve canopy airflow through proper trellising and leaf pulling; apply organic copper-based fungicide sprays starting at bud break through fruit set; avoid working in the vineyard when foliage is wet to reduce spore spread."
+  },
+  {
+    "id": 10,
+    "category": "Pepper,_bell___Bacterial_spot",
+    "crop": "Bell Pepper",
+    "disease_label": "Bacterial spot (bacterial, Xanthomonas species)",
+    // "image_path": "images/Pepper__bell___Bacterial_spot__0022d6b7_d47c_4ee2_ae9a_392a53f48647___JR_B.Spot_8964.JPG",
+    "user_query": "My bell pepper leaves have small dark spots with yellow rings, what is this?",
+    "location": "Kolar, Karnataka, India",
+    "reference_answer": "This is bacterial spot, caused by Xanthomonas bacteria, producing small water-soaked lesions that turn brown/black with a yellow halo on leaves and fruit. Organic management: use copper-based bactericide sprays (note: less effective once established, best as prevention); avoid overhead irrigation and working with wet plants to prevent bacterial spread; remove and destroy infected plant debris; rotate crops with non-solanaceous plants for 2-3 years; use certified disease-free seeds or transplants in future seasons."
+  },
+  {
+    "id": 11,
+    "category": "Pepper,_bell___Bacterial_spot",
+    "crop": "Bell Pepper",
+    "disease_label": "Bacterial spot (bacterial, Xanthomonas species)",
+    // "image_path": "images/Pepper__bell___Bacterial_spot__006adb74_934f_448f_a14f_62181742127b___JR_B.Spot_3395.JPG",
+    "user_query": "Is this bacterial or fungal, and how do I treat it without chemicals?",
+    "location": "Coimbatore, Tamil Nadu, India",
+    "reference_answer": "This is bacterial spot, caused by Xanthomonas bacteria, producing small water-soaked lesions that turn brown/black with a yellow halo on leaves and fruit. Organic management: use copper-based bactericide sprays (note: less effective once established, best as prevention); avoid overhead irrigation and working with wet plants to prevent bacterial spread; remove and destroy infected plant debris; rotate crops with non-solanaceous plants for 2-3 years; use certified disease-free seeds or transplants in future seasons."
+  },
+  {
+    "id": 12,
+    "category": "Pepper,_bell___Bacterial_spot",
+    "crop": "Bell Pepper",
+    "disease_label": "Bacterial spot (bacterial, Xanthomonas species)",
+    // "image_path": "/images/Pepper__bell___Bacterial_spot__00f2e69a_1e56_412d_8a79_fdce794a17e4___JR_B.Spot_3132.JPG",
+    "user_query": "Can I still eat peppers from a plant with these spots?",
+    "location": "Jalgaon, Maharashtra, India",
+    "reference_answer": "This is bacterial spot, caused by Xanthomonas bacteria, producing small water-soaked lesions that turn brown/black with a yellow halo on leaves and fruit. Organic management: use copper-based bactericide sprays (note: less effective once established, best as prevention); avoid overhead irrigation and working with wet plants to prevent bacterial spread; remove and destroy infected plant debris; rotate crops with non-solanaceous plants for 2-3 years; use certified disease-free seeds or transplants in future seasons."
+  },
+  {
+    "id": 13,
+    "category": "Potato___Early_blight",
+    "crop": "Potato",
+    "disease_label": "Early blight (fungal, Alternaria solani)",
+    // "image_path": "images/Potato___Early_blight__001187a0_57ab_4329_baff_e7246a9edeb0___RS_Early.B_8178.JPG",
+    "user_query": "My potato plant leaves have brown spots with rings inside them, what is it?",
+    "location": "Agra, Uttar Pradesh, India",
+    "reference_answer": "This is early blight, a fungal disease causing dark brown spots with concentric 'target board' rings on lower/older leaves first. Organic management: remove and destroy infected lower leaves promptly; apply copper-based or Bacillus subtilis biofungicide sprays; ensure adequate spacing and avoid overhead watering to reduce leaf wetness duration; practice 2-3 year crop rotation away from potatoes and tomatoes; maintain balanced soil nitrogen since stressed/deficient plants are more susceptible."
+  },
+  {
+    "id": 14,
+    "category": "Potato___Early_blight",
+    "crop": "Potato",
+    "disease_label": "Early blight (fungal, Alternaria solani)",
+    // "image_path": "images/Potato___Early_blight__002a55fb_7a3d_4a3a_aca8_ce2d5ebc6925___RS_Early.B_8170.JPG",
+    "user_query": "How do I organically treat early blight on potato leaves?",
+    "location": "Hooghly, West Bengal, India",
+    "reference_answer": "This is early blight, a fungal disease causing dark brown spots with concentric 'target board' rings on lower/older leaves first. Organic management: remove and destroy infected lower leaves promptly; apply copper-based or Bacillus subtilis biofungicide sprays; ensure adequate spacing and avoid overhead watering to reduce leaf wetness duration; practice 2-3 year crop rotation away from potatoes and tomatoes; maintain balanced soil nitrogen since stressed/deficient plants are more susceptible."
+  },
+  {
+    "id": 15,
+    "category": "Potato___Early_blight",
+    "crop": "Potato",
+    "disease_label": "Early blight (fungal, Alternaria solani)",
+    // "image_path": "images/Potato___Early_blight__009c8c31_f22d_4ffd_8f16_189c6f06c577___RS_Early.B_7885.JPG",
+    "user_query": "The lower leaves of my potato crop are turning brown and dying, why?",
+    "location": "Farrukhabad, Uttar Pradesh, India",
+    "reference_answer": "This is early blight, a fungal disease causing dark brown spots with concentric 'target board' rings on lower/older leaves first. Organic management: remove and destroy infected lower leaves promptly; apply copper-based or Bacillus subtilis biofungicide sprays; ensure adequate spacing and avoid overhead watering to reduce leaf wetness duration; practice 2-3 year crop rotation away from potatoes and tomatoes; maintain balanced soil nitrogen since stressed/deficient plants are more susceptible."
+  },
+  {
+    "id": 16,
+    "category": "Potato___Late_blight",
+    "crop": "Potato",
+    "disease_label": "Late blight (oomycete, Phytophthora infestans)",
+    // "image_path": "images/Potato___Late_blight__0051e5e8_d1c4_4a84_bf3a_a426cdad6285___RS_LB_4640.JPG",
+    "user_query": "My potato leaves have dark water-soaked patches spreading fast, is this serious?",
+    "location": "Shimla, Himachal Pradesh, India",
+    "reference_answer": "This is late blight, caused by the oomycete Phytophthora infestans, producing dark, water-soaked lesions with a pale green border, often with white fungal growth on the underside in humid conditions - this is the same pathogen behind the Irish potato famine and spreads fast in cool, wet weather. Organic management: remove and destroy infected plants immediately to prevent spread; apply copper-based fungicide as a preventive/early-stage treatment; avoid overhead irrigation; ensure good drainage and airflow; do not compost infected plant material; monitor closely during cool, damp weather since it spreads rapidly."
+  },
+  {
+    "id": 17,
+    "category": "Potato___Late_blight",
+    "crop": "Potato",
+    "disease_label": "Late blight (oomycete, Phytophthora infestans)",
+    // "image_path": "images/Potato___Late_blight__00695906_210d_4a9d_822e_986a17384115___RS_LB_4026.JPG",
+    "user_query": "What is this disease and can it wipe out my whole potato field?",
+    "location": "Hassan, Karnataka, India",
+    "reference_answer": "This is late blight, caused by the oomycete Phytophthora infestans, producing dark, water-soaked lesions with a pale green border, often with white fungal growth on the underside in humid conditions - this is the same pathogen behind the Irish potato famine and spreads fast in cool, wet weather. Organic management: remove and destroy infected plants immediately to prevent spread; apply copper-based fungicide as a preventive/early-stage treatment; avoid overhead irrigation; ensure good drainage and airflow; do not compost infected plant material; monitor closely during cool, damp weather since it spreads rapidly."
+  },
+  {
+    "id": 18,
+    "category": "Potato___Late_blight",
+    "crop": "Potato",
+    "disease_label": "Late blight (oomycete, Phytophthora infestans)",
+    // "image_path": "images/Potato___Late_blight__006cc01a_1888_4326_9b62_a65cb55a6377___RS_LB_5207.JPG",
+    "user_query": "Organic treatment for late blight on potato, please advise urgently.",
+    "location": "Darjeeling, West Bengal, India",
+    "reference_answer": "This is late blight, caused by the oomycete Phytophthora infestans, producing dark, water-soaked lesions with a pale green border, often with white fungal growth on the underside in humid conditions - this is the same pathogen behind the Irish potato famine and spreads fast in cool, wet weather. Organic management: remove and destroy infected plants immediately to prevent spread; apply copper-based fungicide as a preventive/early-stage treatment; avoid overhead irrigation; ensure good drainage and airflow; do not compost infected plant material; monitor closely during cool, damp weather since it spreads rapidly."
+  },
+  {
+    "id": 19,
+    "category": "Strawberry___Leaf_scorch",
+    "crop": "Strawberry",
+    "disease_label": "Leaf scorch (fungal, Diplocarpon earlianum)",
+    // "image_path": "images/Strawberry___Leaf_scorch__0024203d_6e4c_490f_b9a8_e5926df0b76e___RS_L.Scorch_0795.JPG",
+    "user_query": "My strawberry leaves have purple spots turning into brown scorched patches, what is this?",
+    "location": "Mahabaleshwar, Maharashtra, India",
+    "reference_answer": "This is leaf scorch, a fungal disease causing small purple spots that merge into larger scorched/reddish-brown blotches on strawberry leaves. Organic management: remove and destroy infected leaves after harvest (renovation pruning); improve airflow by proper plant spacing and removing runners; apply organic copper or sulfur-based fungicide sprays; avoid overhead watering, use drip irrigation instead; rotate strawberry beds every 3-4 years to reduce fungal buildup in soil."
+  },
+  {
+    "id": 20,
+    "category": "Strawberry___Leaf_scorch",
+    "crop": "Strawberry",
+    "disease_label": "Leaf scorch (fungal, Diplocarpon earlianum)",
+    // "image_path": "images/Strawberry___Leaf_scorch__0112c6b2_72cd_402b_89cd_ca052983403e___RS_L.Scorch_1161.JPG",
+    "user_query": "How do I treat leaf scorch on strawberries organically?",
+    "location": "Ooty, Tamil Nadu, India",
+    "reference_answer": "This is leaf scorch, a fungal disease causing small purple spots that merge into larger scorched/reddish-brown blotches on strawberry leaves. Organic management: remove and destroy infected leaves after harvest (renovation pruning); improve airflow by proper plant spacing and removing runners; apply organic copper or sulfur-based fungicide sprays; avoid overhead watering, use drip irrigation instead; rotate strawberry beds every 3-4 years to reduce fungal buildup in soil."
+  },
+  {
+    "id": 21,
+    "category": "Strawberry___Leaf_scorch",
+    "crop": "Strawberry",
+    "disease_label": "Leaf scorch (fungal, Diplocarpon earlianum)",
+    // "image_path": "images/Strawberry___Leaf_scorch__0138e78b_9802_43b5_b40e_84c38160418c___RS_L.Scorch_1289.JPG",
+    "user_query": "Will this leaf disease affect my strawberry fruit yield?",
+    "location": "Solan, Himachal Pradesh, India",
+    "reference_answer": "This is leaf scorch, a fungal disease causing small purple spots that merge into larger scorched/reddish-brown blotches on strawberry leaves. Organic management: remove and destroy infected leaves after harvest (renovation pruning); improve airflow by proper plant spacing and removing runners; apply organic copper or sulfur-based fungicide sprays; avoid overhead watering, use drip irrigation instead; rotate strawberry beds every 3-4 years to reduce fungal buildup in soil."
+  },
+  {
+    "id": 22,
+    "category": "Tomato___Early_blight",
+    "crop": "Tomato",
+    "disease_label": "Early blight (fungal, Alternaria solani)",
+    // "image_path": "images/Tomato___Early_blight__0012b9d2_2130_4a06_a834_b1f3af34f57e___RS_Erly.B_8389.JPG",
+    "user_query": "My tomato leaves have brown spots with circles inside them, what disease is this?",
+    "location": "Nashik, Maharashtra, India",
+    "reference_answer": "This is early blight, a fungal disease causing dark brown spots with concentric target-like rings, typically starting on older/lower leaves. Organic management: remove infected lower leaves and destroy them (do not compost); apply neem oil or copper-based organic fungicide on a 7-10 day schedule; mulch around the base to prevent soil splash onto leaves; stake/cage plants for airflow; rotate tomato plantings with non-solanaceous crops for 2-3 years; water at the base, not overhead."
+  },
+  {
+    "id": 23,
+    "category": "Tomato___Early_blight",
+    "crop": "Tomato",
+    "disease_label": "Early blight (fungal, Alternaria solani)",
+    // "image_path": "images/Tomato___Early_blight__0034a551_9512_44e5_ba6c_827f85ecc688___RS_Erly.B_9432.JPG",
+    "user_query": "What organic spray works best for early blight on tomatoes?",
+    "location": "Kolar, Karnataka, India",
+    "reference_answer": "This is early blight, a fungal disease causing dark brown spots with concentric target-like rings, typically starting on older/lower leaves. Organic management: remove infected lower leaves and destroy them (do not compost); apply neem oil or copper-based organic fungicide on a 7-10 day schedule; mulch around the base to prevent soil splash onto leaves; stake/cage plants for airflow; rotate tomato plantings with non-solanaceous crops for 2-3 years; water at the base, not overhead."
+  },
+  {
+    "id": 24,
+    "category": "Tomato___Early_blight",
+    "crop": "Tomato",
+    "disease_label": "Early blight (fungal, Alternaria solani)",
+    // "image_path": "images/Tomato___Early_blight__004cbe60_8ff9_4965_92df_e86694d5e9ba___RS_Erly.B_8253.JPG",
+    "user_query": "The older leaves at the bottom of my tomato plant are dying, is this a problem?",
+    "location": "Hyderabad, Telangana, India",
+    "reference_answer": "This is early blight, a fungal disease causing dark brown spots with concentric target-like rings, typically starting on older/lower leaves. Organic management: remove infected lower leaves and destroy them (do not compost); apply neem oil or copper-based organic fungicide on a 7-10 day schedule; mulch around the base to prevent soil splash onto leaves; stake/cage plants for airflow; rotate tomato plantings with non-solanaceous crops for 2-3 years; water at the base, not overhead."
+  },
+  {
+    "id": 25,
+    "category": "Tomato___Late_blight",
+    "crop": "Tomato",
+    "disease_label": "Late blight (oomycete, Phytophthora infestans)",
+    // "image_path": "images/Tomato___Late_blight__0003faa8_4b27_4c65_bf42_6d9e352ca1a5___RS_Late.B_4946.JPG",
+    "user_query": "My tomato plants have dark, wet-looking patches spreading fast, what should I do?",
+    "location": "Pune, Maharashtra, India",
+    "reference_answer": "This is late blight, caused by Phytophthora infestans, showing irregular water-soaked, dark green to brown lesions on leaves, often with white fuzzy fungal growth underneath in humid conditions, and can destroy a crop within days in cool wet weather. Organic management: remove and destroy infected plants immediately, do not compost; apply copper-based fungicide preventively before/during humid weather; improve airflow via pruning and spacing; avoid overhead watering and working with wet foliage; monitor closely as spread can be very rapid."
+  },
+  {
+    "id": 26,
+    "category": "Tomato___Late_blight",
+    "crop": "Tomato",
+    "disease_label": "Late blight (oomycete, Phytophthora infestans)",
+    // "image_path": "images/Tomato___Late_blight__00355ec2_f12c_4015_b8f9_94354f69ce22___RS_Late.B_5311.JPG",
+    "user_query": "Is this the same disease that caused the Irish potato famine, and how do I stop it?",
+    "location": "Bangalore, Karnataka, India",
+    "reference_answer": "This is late blight, caused by Phytophthora infestans, showing irregular water-soaked, dark green to brown lesions on leaves, often with white fuzzy fungal growth underneath in humid conditions, and can destroy a crop within days in cool wet weather. Organic management: remove and destroy infected plants immediately, do not compost; apply copper-based fungicide preventively before/during humid weather; improve airflow via pruning and spacing; avoid overhead watering and working with wet foliage; monitor closely as spread can be very rapid."
+  },
+  {
+    "id": 27,
+    "category": "Tomato___Late_blight",
+    "crop": "Tomato",
+    "disease_label": "Late blight (oomycete, Phytophthora infestans)",
+    // "image_path": "images/Tomato___Late_blight__005a2c1f_4e15_49e4_9e5c_61dc3ecf9708___RS_Late.B_5096.JPG",
+    "user_query": "Organic emergency treatment for late blight on tomato needed urgently.",
+    "location": "Nagpur, Maharashtra, India",
+    "reference_answer": "This is late blight, caused by Phytophthora infestans, showing irregular water-soaked, dark green to brown lesions on leaves, often with white fuzzy fungal growth underneath in humid conditions, and can destroy a crop within days in cool wet weather. Organic management: remove and destroy infected plants immediately, do not compost; apply copper-based fungicide preventively before/during humid weather; improve airflow via pruning and spacing; avoid overhead watering and working with wet foliage; monitor closely as spread can be very rapid."
+  },
+  {
+    "id": 28,
+    "category": "Tomato___healthy",
+    "crop": "Tomato",
+    "disease_label": "None - healthy leaf",
+    // "image_path": "images/Tomato___healthy__000146ff_92a4_4db6_90ad_8fce2ae4fddd___GH_HL_Leaf_259.1.JPG",
+    "user_query": "My tomato leaves look fine to me but I want to double check, any issues?",
+    "location": "Nashik, Maharashtra, India",
+    "reference_answer": "The leaf shown appears healthy, with uniform green color and no visible spots, lesions, wilting, or discoloration. No treatment is needed. Preventive organic care to maintain plant health: apply balanced organic compost or well-rotted manure periodically; water consistently at the base to avoid moisture stress; monitor regularly for early signs of pests or disease; ensure good spacing and airflow between plants; consider companion planting (e.g., basil, marigold) to naturally deter common tomato pests."
+  },
+  {
+    "id": 29,
+    "category": "Tomato___healthy",
+    "crop": "Tomato",
+    "disease_label": "None - healthy leaf",
+    // "image_path": "images/Tomato___healthy__000bf685_b305_408b_91f4_37030f8e62db___GH_HL_Leaf_308.1.JPG",
+    "user_query": "What organic care routine should I follow to keep my tomato plants healthy?",
+    "location": "Coimbatore, Tamil Nadu, India",
+    "reference_answer": "The leaf shown appears healthy, with uniform green color and no visible spots, lesions, wilting, or discoloration. No treatment is needed. Preventive organic care to maintain plant health: apply balanced organic compost or well-rotted manure periodically; water consistently at the base to avoid moisture stress; monitor regularly for early signs of pests or disease; ensure good spacing and airflow between plants; consider companion planting (e.g., basil, marigold) to naturally deter common tomato pests."
+  },
+  {
+    "id": 30,
+    "category": "Tomato___healthy",
+    "crop": "Tomato",
+    "disease_label": "None - healthy leaf",
+    // "image_path": "images/Tomato___healthy__0031da2a_8edd_468f_a8b1_106657717a32___RS_HL_0105.JPG",
+    "user_query": "Are there early warning signs I should watch for on healthy-looking tomato leaves?",
+    "location": "Indore, Madhya Pradesh, India",
+    "reference_answer": "The leaf shown appears healthy, with uniform green color and no visible spots, lesions, wilting, or discoloration. No treatment is needed. Preventive organic care to maintain plant health: apply balanced organic compost or well-rotted manure periodically; water consistently at the base to avoid moisture stress; monitor regularly for early signs of pests or disease; ensure good spacing and airflow between plants; consider companion planting (e.g., basil, marigold) to naturally deter common tomato pests."
+  }
+]
